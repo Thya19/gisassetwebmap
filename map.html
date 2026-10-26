@@ -92,7 +92,7 @@ html, body { height:100%; margin:0; font-family: Arial, sans-serif; }
 // ---------------------------------------------------------------
 // CONFIG
 // ---------------------------------------------------------------
-const GEOSERVER = "https://viscous-fiftieth-sip.ngrok-free.dev/geoserver/thyagisautomation";
+const GEOSERVER = "https://viscous-fiftieth-sip.ngrok-free.dev/geoserver";
 const WORKSPACE = "thyagisautomation";
 
 // Matched against the "category" column (case-insensitive, partial match).
@@ -154,7 +154,10 @@ async function getWfs(layerName, cqlFilter) {
         srsName: "EPSG:4326",
         CQL_FILTER: cqlFilter
     });
-    const response = await fetch(GEOSERVER + "/" + WORKSPACE + "/ows?" + params);
+    
+    const response = await fetch(GEOSERVER + "/" + WORKSPACE + "/ows?" + params, {
+    headers: { "ngrok-skip-browser-warning": "true" }
+});
     if (!response.ok) throw new Error(layerName + " returned HTTP " + response.status);
     return response.json();
 }
