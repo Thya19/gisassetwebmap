@@ -215,7 +215,7 @@ function zoomToFeatures() {
 zoomBtn.addEventListener("click", zoomToFeatures);
 
 async function main() {
-    const requestId = Number(new URLSearchParams(location.search).get("requestid"));
+    const requestId = Number(new URLSearchParams(location.search).get("token"));
     if (!Number.isInteger(requestId) || requestId <= 0) {
         summaryEl.innerHTML = '<div class="err">No valid request ID in the link.</div>';
         return;
