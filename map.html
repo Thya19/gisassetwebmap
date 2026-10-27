@@ -224,9 +224,9 @@ async function main() {
     let buffer, searchLoc, assets;
     try {
         [buffer, searchLoc, assets] = await Promise.all([
-            getWfs("v_search_buffer",   "id=" + token),
-            getWfs("v_search_location", "id=" + token),
-            getWfs("poi_assets",        "request_id=" + token)
+            getWfs("v_search_buffer",   "token=" + token),
+            getWfs("v_search_location", "token=" + token),
+            getWfs("poi_assets",        "token=" + token)
         ]);
     } catch (err) {
         console.error(err);
