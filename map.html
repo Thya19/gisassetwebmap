@@ -292,7 +292,7 @@ async function main() {
     });
 
     const total = (assets.features || []).length;
-    summaryEl.innerHTML = "Request ID: " + token + "<br>Assets found: " + total;
+    summaryEl.innerHTML = "Request ID: " + requestId + "<br>Assets found: " + total;
     zoomBtn.hidden = false;
 
     buildLegend(total);
