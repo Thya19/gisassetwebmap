@@ -215,8 +215,8 @@ function zoomToFeatures() {
 zoomBtn.addEventListener("click", zoomToFeatures);
 
 async function main() {
-    const requestId = Number(new URLSearchParams(location.search).get("token"));
-    if (!Number.isInteger(requestId) || requestId <= 0) {
+    const token = Number(new URLSearchParams(location.search).get("token"));
+    if (!Number.isInteger(token) || token <= 0) {
         summaryEl.innerHTML = '<div class="err">No valid request ID in the link.</div>';
         return;
     }
@@ -224,9 +224,9 @@ async function main() {
     let buffer, searchLoc, assets;
     try {
         [buffer, searchLoc, assets] = await Promise.all([
-            getWfs("v_search_buffer",   "id=" + requestId),
-            getWfs("v_search_location", "id=" + requestId),
-            getWfs("poi_assets",        "request_id=" + requestId)
+            getWfs("v_search_buffer",   "id=" + token),
+            getWfs("v_search_location", "id=" + token),
+            getWfs("poi_assets",        "request_id=" + token)
         ]);
     } catch (err) {
         console.error(err);
@@ -292,7 +292,7 @@ async function main() {
     });
 
     const total = (assets.features || []).length;
-    summaryEl.innerHTML = "Request ID: " + requestId + "<br>Assets found: " + total;
+    summaryEl.innerHTML = "Request ID: " + token + "<br>Assets found: " + total;
     zoomBtn.hidden = false;
 
     buildLegend(total);
