@@ -215,7 +215,7 @@ function zoomToFeatures() {
 zoomBtn.addEventListener("click", zoomToFeatures);
 
 async function main() {
-    const token = Number(new URLSearchParams(location.search).get("token"));
+    const requestId  = Number(new URLSearchParams(location.search).get("id"));
     if (!Number.isInteger(token) || token <= 0) {
         summaryEl.innerHTML = '<div class="err">No valid request ID in the link.</div>';
         return;
@@ -224,9 +224,9 @@ async function main() {
     let buffer, searchLoc, assets;
     try {
         [buffer, searchLoc, assets] = await Promise.all([
-            getWfs("v_search_buffer",   "token=" + token),
-            getWfs("v_search_location", "token=" + token),
-            getWfs("poi_assets",        "token=" + token)
+            getWfs("v_search_buffer",   "id=" + requestId),
+            getWfs("v_search_location", "id=" + requestId),
+            getWfs("poi_assets",        "request_id=" + requestId)
         ]);
     } catch (err) {
         console.error(err);
