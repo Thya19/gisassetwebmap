@@ -201,11 +201,12 @@ function clusterIconFor(style) {
 // ---------------------------------------------------------------
 const bufferLayer   = L.featureGroup().addTo(map);
 const locationLayer = L.featureGroup().addTo(map);
+const routeLayer    = L.featureGroup().addTo(map);
 const categoryData  = {};   // label -> { style, cluster, markers }
 
 function zoomToFeatures() {
     const bounds = L.latLngBounds([]);
-    [bufferLayer, locationLayer, ...Object.values(categoryData).map(c => c.cluster)]
+    [bufferLayer, locationLayer, routeLayer, ...Object.values(categoryData).map(c => c.cluster)]
         .forEach(layer => {
             const b = layer.getBounds();
             if (b.isValid()) bounds.extend(b);
@@ -235,7 +236,13 @@ async function main() {
             "<br>Check that GeoServer is running and CORS is enabled.</div>";
         return;
     }
-
+        // Route is optional: count-only questions have no route, and the layer may be empty
+    let routes = { features: [] };
+    try {
+        routes = await getWfs("route_lines", "request_id=" + requestId);
+    } catch (err) {
+        console.warn("No route loaded:", err);
+    }
     // 1. Search buffer
     L.geoJSON(buffer, {
         style: { color: "#0F1CD9", weight: 2, dashArray: "6 4",
@@ -291,8 +298,40 @@ async function main() {
         categoryData[label] = { style, cluster, markers };
     });
 
+        // 4. Route (use the newest one if the request has several)
+    let routeInfo = "";
+    const route = (routes.features || []).slice(-1)[0];
+    if (route && route.geometry) {
+        const p = route.properties || {};
+        const km  = (Number(p.distance_m) / 1000).toFixed(1);
+        const min = Math.round(Number(p.duration_s) / 60);
+        const label = escapeHtml(p.dest_name || "Destination");
+
+        L.geoJSON(route, {
+            style: { color: "#e11d48", weight: 5, opacity: 0.85 },
+            onEachFeature: (f, layer) =>
+                layer.bindPopup("<b>Route to " + label + "</b><br>" + km + " km, about " + min + " min by car")
+        }).eachLayer(l => routeLayer.addLayer(l));
+
+        // Destination flag at the end of the line
+        const lines = route.geometry.type === "MultiLineString"
+            ? route.geometry.coordinates : [route.geometry.coordinates];
+        const lastLine = lines[lines.length - 1];
+        const end = lastLine[lastLine.length - 1];   // [lon, lat]
+        L.marker([end[1], end[0]], {
+            zIndexOffset: 900,
+            icon: L.AwesomeMarkers.icon({
+                icon: "flag-checkered", prefix: "fa", markerColor: "darkred", iconColor: "white"
+            })
+        }).bindPopup("<b>" + label + "</b><br>" + km + " km, about " + min + " min")
+          .addTo(routeLayer);
+
+        routeInfo = "<br>Route to " + label + ": " + km + " km, ~" + min + " min";
+    }
+
     const total = (assets.features || []).length;
-    summaryEl.innerHTML = "Request ID: " + requestId + "<br>Assets found: " + total;
+    summaryEl.innerHTML = "Request ID: " + requestId + "<br>Assets found: " + total + routeInfo;
+    
     zoomBtn.hidden = false;
 
     buildLegend(total);
